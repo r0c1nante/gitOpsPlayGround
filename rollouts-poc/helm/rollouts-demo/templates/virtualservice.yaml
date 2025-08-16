@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: demo-vs
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - {{ .Values.gateway.name }}
+  http:
+    - name: primary
+      route:
+        - destination:
+            host: {{ include "rollouts-demo.fullname" . }}-stable.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: {{ .Values.service.port }}
+          weight: 100
+        - destination:
+            host: {{ include "rollouts-demo.fullname" . }}-canary.{{ .Release.Namespace }}.svc.cluster.local
+            port:
+              number: {{ .Values.service.port }}
+          weight: 0

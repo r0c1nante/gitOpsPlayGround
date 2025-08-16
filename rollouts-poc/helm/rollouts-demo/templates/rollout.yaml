@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "rollouts-demo.fullname" . }}
+  labels:
+    app: {{ include "rollouts-demo.name" . }}
+spec:
+  replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: {{ include "rollouts-demo.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "rollouts-demo.name" . }}
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+  strategy:
+    canary:
+      canaryService: {{ include "rollouts-demo.fullname" . }}-canary
+      stableService: {{ include "rollouts-demo.fullname" . }}-stable
+      trafficRouting:
+        istio:
+          virtualService:
+            name: demo-vs
+            routes:
+              - primary
+      steps:
+        - setWeight: 20
+        - pause: { duration: 30 }
+        - analysis:
+            templates:
+              - templateName: success-rate
+        - setWeight: 50
+        - pause: { duration: 30 }
+        - analysis:
+            templates:
+              - templateName: success-rate
+        - setWeight: 100
