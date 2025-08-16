@@ -1,19 +1,15 @@
 nameOverride: "rollouts-demo"
 image:
   repository: argoproj/rollouts-demo
-  # initial version (blue)
   tag: "blue"
   pullPolicy: IfNotPresent
 
-# set to a new tag to trigger canary (e.g., "green")
-newImageTag: "green"
-
 replicas: 3
+
 service:
   port: 80
   targetPort: 8080
 
-# Istio Gateway
 gateway:
   name: demo-gw
   host: "*"
