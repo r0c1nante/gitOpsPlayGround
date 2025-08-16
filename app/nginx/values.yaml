@@ -1,2 +1,0 @@
-image: "nginx:1.29.0-alpine3.22-slim"
-replicas: 2
